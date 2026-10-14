@@ -1,0 +1,4 @@
+# GitHub Pages (Jekyll) settings for www.thatswhy.dev.
+# The Cloudflare Worker in api/ is deployed separately; don't publish its source.
+exclude:
+  - api

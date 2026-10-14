@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xl="http://www.w3.org/1999/xlink" version="1.1" xmlns:dc="http://purl.org/dc/elements/1.1/" viewBox="93.70703 129.7461 612.2539 612.2539" width="612.2539" height="612.2539">
+  <defs/>
+  <g id="Canvas_1" stroke-dasharray="none" stroke="none" fill="none" fill-opacity="1" stroke-opacity="1">
+    <title>Canvas 1</title>
+    <g id="Canvas_1_Layer_1">
+      <title>Layer 1</title>
+      <g id="Graphic_4">
+        <circle cx="223.21094" cy="246.70703" r="26.0000415454493" fill="black"/>
+      </g>
+      <g id="Graphic_5">
+        <circle cx="407.3711" cy="189.1289" r="26.0000415454493" fill="black"/>
+      </g>
+      <g id="Graphic_6">
+        <circle cx="481.0078" cy="232.76563" r="26.0000415454493" fill="black"/>
+      </g>
+      <g id="Graphic_7">
+        <circle cx="539.90625" cy="372.33984" r="26.0000415454493" fill="black"/>
+      </g>
+      <g id="Graphic_8">
+        <circle cx="584.9844" cy="435.87305" r="26.0000415454493" fill="black"/>
+      </g>
+      <g id="Graphic_9">
+        <circle cx="481.0078" cy="642.9082" r="26.0000415454493" fill="black"/>
+      </g>
+      <g id="Graphic_10">
+        <circle cx="407.3711" cy="692.5293" r="26.0000415454493" fill="black"/>
+      </g>
+      <g id="Graphic_11">
+        <circle cx="317.9258" cy="636.4746" r="26.0000415454493" fill="black"/>
+      </g>
+      <g id="Graphic_12">
+        <circle cx="238.82422" cy="556.57227" r="26.0000415454493" fill="black"/>
+      </g>
+      <g id="Graphic_13">
+        <circle cx="238.82422" cy="445.0879" r="26.0000415454493" fill="black"/>
+      </g>
+      <g id="Graphic_14">
+        <circle cx="380.77734" cy="467.4199" r="26.0000415454493" fill="black"/>
+      </g>
+      <g id="Line_20">
+        <line x1="243" y1="560" x2="320" y2="636" stroke="black" stroke-linecap="butt" stroke-linejoin="miter" stroke-width="24"/>
+      </g>
+      <g id="Line_21">
+        <path d="M 224 249 L 225 302.1914 L 306.4414 384.47656 L 306 503" stroke="black" stroke-linecap="square" stroke-linejoin="round" stroke-width="23"/>
+      </g>
+      <g id="Line_22">
+        <path d="M 254 459.5 L 406.77734 606.418 L 407.77734 689.4414" stroke="black" stroke-linecap="square" stroke-linejoin="bevel" stroke-width="23"/>
+      </g>
+      <g id="Line_23">
+        <path d="M 406 191.5 L 406.77734 286.1875 L 310.97656 388.3008" stroke="black" stroke-linecap="square" stroke-linejoin="round" stroke-width="23"/>
+      </g>
+      <g id="Line_24">
+        <path d="M 481.5 242 L 480.96484 318 L 421.7656 378.9922 L 475.35547 431.45703 L 474.02734 540.72656 L 413.89844 604.5664" stroke="black" stroke-linecap="square" stroke-linejoin="round" stroke-width="23"/>
+      </g>
+      <g id="Line_25">
+        <line x1="382.5" y1="472" x2="459.5" y2="554.27734" stroke="black" stroke-linecap="square" stroke-linejoin="bevel" stroke-width="23"/>
+      </g>
+      <g id="Line_26">
+        <line x1="536.5" y1="378" x2="475.83203" y2="430" stroke="black" stroke-linecap="square" stroke-linejoin="bevel" stroke-width="23"/>
+      </g>
+      <g id="Line_27">
+        <path d="M 585 441 L 542.90234 482.9336 L 542.8203 578.03125 L 489.1992 637.1758" stroke="black" stroke-linecap="square" stroke-linejoin="round" stroke-width="23"/>
+      </g>
+    </g>
+  </g>
+</svg>
