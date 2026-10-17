@@ -1,0 +1,51 @@
+:root {
+  --bg: #f4efe6; --ink: #3b3631;
+  --brass-hi: #e6c97f; --brass-lo: #b08a3e; --engrave: #3a2a12; --plate-shadow: rgba(80,55,30,0.13);
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #16181c; --ink: #d9d4cc;
+    --brass-hi: #b89a55; --brass-lo: #7d6229; --engrave: #241808; --plate-shadow: rgba(0,0,0,0.35);
+  }
+}
+html, body { margin: 0; height: 100%; background: var(--bg); overflow: hidden; }
+canvas { position: fixed; inset: 0; width: 100%; height: 100%; display: block; touch-action: none; }
+#fly { pointer-events: none; }
+
+/* brass name plaque on the front of the box (position, height and font size set by layout()) */
+.plaque {
+  position: fixed; box-sizing: border-box;
+  display: flex; align-items: center; gap: .5em; padding: .25em 1em;
+  border-radius: 5px; white-space: nowrap;
+  background: linear-gradient(var(--brass-hi), var(--brass-lo));
+  box-shadow: 1px 2px 0 var(--plate-shadow), inset 0 1px 0 rgba(255,245,215,0.45);
+  font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+}
+/* screws */
+.plaque::before, .plaque::after {
+  content: ''; position: absolute; top: 50%; width: 3.2px; height: 3.2px; margin-top: -1.6px;
+  border-radius: 50%; background: rgba(0,0,0,0.25);
+}
+.plaque::before { left: 5px; }
+.plaque::after { right: 5px; }
+.plaque .logo { display: block; line-height: 0; }
+.plaque img { width: 1.6em; height: 1.6em; opacity: .85; }
+.plaque h1, .plaque .motto { margin: 0; line-height: 1.15; color: var(--engrave); text-shadow: 0 1px 0 rgba(255,240,200,0.45); }
+.plaque h1 { font-size: 1em; font-weight: 700; letter-spacing: .03em; }
+.plaque .dev { opacity: .6; }
+.plaque .motto { margin-top: .15em; font-size: .9em; font-weight: 600; letter-spacing: .04em; opacity: .75; }
+/* where one line won't fit, the motto takes two */
+.plaque.narrow .motto span { display: block; }
+
+/* text below the box (left and right set by layout()) */
+.about {
+  position: fixed; bottom: 10px; margin: 0;
+  color: var(--ink); font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  font-size: 12px; line-height: 1.4;
+}
+.about p { margin: 2px 0 0; max-width: 80em; opacity: .65; }
+.about .tag { margin: 0; font-size: 15px; font-weight: 600; letter-spacing: .02em; opacity: .8; }
+@media (max-width: 480px) { .about .tag { font-size: 14px; } }
+@media (prefers-color-scheme: dark) {
+  .about a, .about a:visited { color: #9db8ff; }
+}
