@@ -1,0 +1,37 @@
+# AI CAPEX mode: conditions the AI infrastructure buildout depends on.
+# The first 15 are the plain-language conditions in longreach/decision-watch.html;
+# the rest are new, written in the same voice.
+mode: AI CAPEX
+conditions:
+  # from decision-watch.html
+  - "OpenAI can keep raising the money it needs to pay for the compute it has committed to."
+  - "Anthropic's revenue keeps growing, so its compute commitments look less stretched."
+  - "Oracle can mostly pay for its buildout from its own cash, without ever-larger borrowing."
+  - "Most of Oracle's backlog stays years away, so near-term revenue will not close the funding gap."
+  - "Demand for Google's cloud keeps building."
+  - "CoreWeave does not become more dependent on a handful of customers."
+  - "Older GPUs still earn enough when their first contracts renew."
+  - "CoreWeave needs less outside money each quarter."
+  - "Our project loans are paid before anyone else from the customer payments behind them."
+  - "Nvidia's support for its customers stays small enough to absorb if some fail."
+  - "The new campus gets power on time, so rent starts when planned."
+  - "Most rent comes from tenants that are very likely to keep paying."
+  - "The grid can connect the data centers our plants are built to serve."
+  - "Data centers keep paying enough for power to make new plants pay off."
+  - "AI keeps pushing up electricity demand."
+  # new
+  - "Microsoft keeps signing new capacity deals instead of letting its options lapse."
+  - "Meta's AI spending keeps paying for itself in ad revenue."
+  - "Enterprise customers move their AI pilots into paid production."
+  - "Token prices fall more slowly than usage grows, so inference revenue keeps rising."
+  - "Chip export rules do not cut off a major market overnight."
+  - "Each new GPU generation does not make last year's fleet worthless before it is paid off."
+  - "Private credit keeps lending against data centers on reasonable terms."
+  - "The big cloud providers keep spending more on capex this year than last."
+  - "Shortages of transformers and turbines do not push back power-on dates."
+  - "Advanced chip packaging capacity keeps up with GPU orders."
+  - "Interest rates stay low enough for long data-center leases to pay off."
+  - "Liquid-cooling retrofits at older sites stay on schedule."
+  - "Local communities keep approving new data-center permits."
+  - "Customers renew their reserved capacity rather than switching to spot pricing."
+  - "Open-weight models do not undercut paid APIs badly enough to stall revenue."

@@ -30,6 +30,16 @@ function shuffle(arr, rnd) {
   return arr;
 }
 
+// ---------- events ----------
+// The simulation announces what happens to marbles; the displays (slips, statuses) listen.
+//   tagPassed (marble, element)  a marble went through a tagged element
+//   exitReached (sink, marble)   a marble arrived at an exit hole
+//   swallowed (marble)           the exit hole has swallowed it
+//   fused (gone, survivor)       two marbles became one
+const listeners = {};
+function on(event, fn) { (listeners[event] ??= []).push(fn); }
+function emit(event, ...args) { for (const fn of listeners[event] ?? []) fn(...args); }
+
 // ---------- point lists ----------
 function linePts(a, b, n = 8) {
   const out = [];
@@ -56,6 +66,18 @@ function offsetPts(pts, d) {
 }
 
 // ---------- canvas ----------
+// split text into lines no wider than maxW in the context's current font
+function wrapText(g, text, maxW) {
+  const lines = [];
+  let line = '';
+  for (const word of text.split(' ')) {
+    const next = line ? line + ' ' + word : word;
+    if (line && g.measureText(next).width > maxW) { lines.push(line); line = word; }
+    else line = next;
+  }
+  if (line) lines.push(line);
+  return lines;
+}
 function roundRect(g, x, y, w, h, rad) {
   rad = Math.min(rad, w / 2, h / 2);
   g.beginPath();

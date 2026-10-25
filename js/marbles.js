@@ -80,7 +80,7 @@ function setPath(m, P) {
 function handoff(m, col, lane) {
   const e = grid[col][lane];
   e.enter(m, lane);
-  if (e.tag) { m.tags.push(e.tag); e.lit = now; }
+  if (e.tag) { m.tags.push(e.tag); e.lit = now; emit('tagPassed', m, e); }
 }
 function clearAt(u, v, d) {
   return !marbles.some(m => !m.dead && (m.u - u) ** 2 + (m.v - v) ** 2 < d * d);

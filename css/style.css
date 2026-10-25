@@ -1,12 +1,12 @@
+/* --bg, --ink, --brass-hi, --brass-lo, --engrave and --plate-shadow are set from THEMES in
+   js/theme.js, so the page and the canvas drawing share one set of colours */
 :root {
-  --bg: #f4efe6; --ink: #3b3631;
-  --brass-hi: #e6c97f; --brass-lo: #b08a3e; --engrave: #3a2a12; --plate-shadow: rgba(80,55,30,0.13);
+  --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  --accent: #9db8ff;
+  --go-hi: #93d68c; --go-lo: #3d8a47; --go-ink: #123a1a;
 }
 @media (prefers-color-scheme: dark) {
-  :root {
-    --bg: #16181c; --ink: #d9d4cc;
-    --brass-hi: #b89a55; --brass-lo: #7d6229; --engrave: #241808; --plate-shadow: rgba(0,0,0,0.35);
-  }
+  :root { --go-hi: #74b46f; --go-lo: #2c6a35; --go-ink: #0b2611; }
 }
 html, body { margin: 0; height: 100%; background: var(--bg); overflow: hidden; }
 canvas { position: fixed; inset: 0; width: 100%; height: 100%; display: block; touch-action: none; }
@@ -19,7 +19,7 @@ canvas { position: fixed; inset: 0; width: 100%; height: 100%; display: block; t
   border-radius: 5px; white-space: nowrap;
   background: linear-gradient(var(--brass-hi), var(--brass-lo));
   box-shadow: 1px 2px 0 var(--plate-shadow), inset 0 1px 0 rgba(255,245,215,0.45);
-  font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  font-family: var(--mono);
 }
 /* screws */
 .plaque::before, .plaque::after {
@@ -37,15 +37,53 @@ canvas { position: fixed; inset: 0; width: 100%; height: 100%; display: block; t
 /* where one line won't fit, the motto takes two */
 .plaque.narrow .motto span { display: block; }
 
+/* front-panel controls (position and font size set by layout()) */
+.controls {
+  position: fixed; display: flex; align-items: center; gap: .9em;
+  font-family: var(--mono);
+}
+/* :where() keeps this reset from overriding the button styles below */
+:where(.controls button) { font: inherit; border: 0; padding: 0; margin: 0; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+.controls button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.controls button:active { transform: translateY(1px); }
+/* round green reset button */
+.reset {
+  width: 2.6em; height: 2.6em; border-radius: 50%; display: grid; place-items: center;
+  color: var(--go-ink);
+  background: radial-gradient(circle at 35% 30%, var(--go-hi), var(--go-lo));
+  box-shadow: 1px 2px 0 var(--plate-shadow), inset 0 1px 0 rgba(255,245,215,0.5), inset 0 -1px 2px rgba(0,0,0,0.25);
+}
+.reset svg { width: 1.4em; height: 1.4em; fill: none; stroke: currentColor; stroke-width: 2.6; stroke-linecap: round; stroke-linejoin: round; }
+/* backlit mode buttons in a dark bezel, 1970s control-panel style; --lamp is the lens colour */
+.modes {
+  display: flex; gap: .45em; padding: .35em; border-radius: 4px; background: #1b1410;
+  box-shadow: inset 0 1px 3px rgba(0,0,0,0.7), 0 1px 0 rgba(255,235,210,0.12);
+}
+.mode {
+  --lamp: 255,178,70;
+  height: 2.6em; padding: 0 1.6em; border-radius: 3px;
+  font-weight: 700; letter-spacing: .08em; white-space: nowrap;
+  color: rgba(var(--lamp), 0.45);
+  background: linear-gradient(rgba(var(--lamp), 0.16), rgba(var(--lamp), 0.05)), #2a211b;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.07), inset 0 -2px 3px rgba(0,0,0,0.5);
+}
+.mode[data-scenario="staffing"] { --lamp: 150,226,120; }
+.mode[data-scenario="medical"] { --lamp: 130,196,255; }
+.mode[aria-pressed="true"] {
+  color: #24170a;
+  background: radial-gradient(ellipse at 50% 35%, rgba(255,252,240,0.95), rgb(var(--lamp)) 75%);
+  box-shadow: 0 0 10px rgba(var(--lamp), 0.65), inset 0 1px 0 rgba(255,255,255,0.6), inset 0 -2px 3px rgba(0,0,0,0.2);
+}
+
 /* text below the box (left and right set by layout()) */
 .about {
   position: fixed; bottom: 10px; margin: 0;
-  color: var(--ink); font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  color: var(--ink); font-family: var(--mono);
   font-size: 12px; line-height: 1.4;
 }
 .about p { margin: 2px 0 0; max-width: 80em; opacity: .65; }
-.about .tag { margin: 0; font-size: 15px; font-weight: 600; letter-spacing: .02em; opacity: .8; }
-@media (max-width: 480px) { .about .tag { font-size: 14px; } }
+.about .tagline { margin: 0; font-size: 15px; font-weight: 600; letter-spacing: .02em; opacity: .8; }
+@media (max-width: 480px) { .about .tagline { font-size: 14px; } }
 @media (prefers-color-scheme: dark) {
-  .about a, .about a:visited { color: #9db8ff; }
+  .about a, .about a:visited { color: var(--accent); }
 }

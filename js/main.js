@@ -10,7 +10,8 @@ function step(dt) {
   for (const k of sinks) k.update();
   stepMarbles(dt);
   stepParticles(dt);
-  stepNotes();
+  stepSlips();
+  stepStatuses();
   stepMeter(dt);
   stepLid(dt);
 }
@@ -31,5 +32,6 @@ function rebuildSoon() {
 addEventListener('resize', rebuildSoon);
 darkQuery.addEventListener('change', build);
 bindLidInput();
+bindControls();
 build();
 requestAnimationFrame(frame);

@@ -1,7 +1,7 @@
 'use strict';
 // The walnut box around the machine, seen slightly from above and in front: a sliding
 // light-wood lid on top with the element tags and LEDs on it, and on the front face an
-// OUTCOMES meter and the brass slot notes leave by.
+// OUTCOMES meter and the brass slot slips leave by.
 
 // ---------- state ----------
 // pre-rendered top surface (full canvas, interior cut out), page with front face (full canvas)
@@ -13,8 +13,18 @@ const lidState = { offset: 0, open: false, drag: null };
 const meter = { value: 0, idle: 0.4, nextIdle: 0 };
 
 const LID_SNAP = 0.15;   // a drag past this fraction of the lid's travel opens (or closes) it
-const METER_INK = '#2b2520', METER_RED = '#c8321e';
-const LED_OFF = '#4a1f17', LED_ON = '#ff5a36', LED_GLOW = '#ff3b1f';
+// colours that don't change with the light/dark theme (those are in THEMES);
+// entries ending in RGB are "r,g,b" for use with a varying alpha
+const PAINT = {
+  edgeLight: 'rgba(255,232,205,0.22)', crease: 'rgba(0,0,0,0.25)', wallShadow: 'rgba(40,25,10,0.45)',
+  frontShade: ['rgba(0,0,0,0.16)', 'rgba(0,0,0,0.34)'], lidBevel: 'rgba(255,248,230,0.4)',
+  pull: ['rgba(70,42,15,0.4)', 'rgba(70,42,15,0.1)', 'rgba(255,245,220,0.35)'], pullEdge: 'rgba(70,42,15,0.2)',
+  screw: 'rgba(0,0,0,0.25)', slit: '#2a2116', slitFed: '#000',
+  meterFace: ['#f8eac4', '#e9d39c'], meterInk: '#2b2520', meterRed: '#c8321e', needle: '#1d1a17',
+  glass: ['rgba(255,255,255,0.35)', 'rgba(255,255,255,0)'],
+  labelLightRGB: '255,226,170', labelHighlight: 'rgba(255,250,236,0.5)', labelGlowRGB: '255,150,60', labelLitRGB: '196,64,20',
+  ledOff: '#4a1f17', ledOn: '#ff5a36', ledGlow: '#ff3b1f', ledShine: 'rgba(255,255,255,0.55)'
+};
 
 // open, the lid rests off to the left with a strip of it, finger pull included, still in the box
 const lidOpenOffset = () => box.x + box.lidPeek - (box.lid.x + box.lid.w);
@@ -53,7 +63,7 @@ function renderTop(rnd) {
   g.save(); roundRect(g, x, y, w, h + 8, 8); g.clip();
   woodGrain(g, x, y, w, h, rnd, theme.walnut, theme.walnutHi, theme.walnutGrain);
   // the front edge catches the light
-  g.fillStyle = 'rgba(255,232,205,0.22)'; g.fillRect(x, front.y - 1.5, w, 1.5);
+  g.fillStyle = PAINT.edgeLight; g.fillRect(x, front.y - 1.5, w, 1.5);
   g.restore();
   g.lineWidth = 1; g.strokeStyle = theme.woodDk; roundRect(g, x + 0.5, y + 0.5, w - 1, h + 8, 8); g.stroke();
   // cut out the interior
@@ -62,7 +72,7 @@ function renderTop(rnd) {
   g.globalCompositeOperation = 'source-over';
   // the walls cast a soft shadow onto the machine
   g.save(); roundRect(g, I.x, I.y, I.w, I.h, 3); g.clip();
-  g.shadowColor = 'rgba(40,25,10,0.45)'; g.shadowBlur = 14; g.shadowOffsetY = 3;
+  g.shadowColor = PAINT.wallShadow; g.shadowBlur = 14; g.shadowOffsetY = 3;
   g.strokeStyle = '#000'; g.lineWidth = 20; roundRect(g, I.x - 10, I.y - 10, I.w + 20, I.h + 20, 6); g.stroke();
   g.restore();
   g.lineWidth = 1; g.strokeStyle = theme.woodDk; roundRect(g, I.x - 0.5, I.y - 0.5, I.w + 1, I.h + 1, 3); g.stroke();
@@ -80,9 +90,9 @@ function renderFront(rnd) {
   roundRect(g, x, y, w, h, 8); g.clip();
   g.beginPath(); g.rect(x, front.y, w, front.h); g.clip();
   woodGrain(g, x, front.y, w, front.h, rnd, theme.walnut, theme.walnutHi, theme.walnutGrain);
-  g.fillStyle = verticalGradient(g, front.y, bottom, 'rgba(0,0,0,0.16)', 'rgba(0,0,0,0.34)');
+  g.fillStyle = verticalGradient(g, front.y, bottom, ...PAINT.frontShade);
   g.fillRect(x, front.y, w, front.h);
-  g.fillStyle = 'rgba(0,0,0,0.25)'; g.fillRect(x, front.y, w, 1);
+  g.fillStyle = PAINT.crease; g.fillRect(x, front.y, w, 1);
   g.lineWidth = 1; g.strokeStyle = theme.woodDk; roundRect(g, x + 0.5, y + 0.5, w - 1, h - 1, 8); g.stroke();
   g.restore();
 }
@@ -92,7 +102,7 @@ function drawBoxShadow(g) {
   const { x, y, w, h } = box, far = 10000, [tl, tr] = [project(x, y), project(x + w, y)];
   g.save();
   g.shadowColor = theme.boxShadow; g.shadowBlur = 24; g.shadowOffsetX = far * dpr; g.shadowOffsetY = 8;
-  g.fillStyle = '#000';
+  g.fillStyle = '#000';   // unseen: only the shadow lands on the canvas
   g.beginPath();
   g.moveTo(tl[0] - far, tl[1]); g.lineTo(tr[0] - far, tr[1]);
   g.lineTo(x + w - far, y + h); g.lineTo(x - far, y + h);
@@ -101,8 +111,7 @@ function drawBoxShadow(g) {
 }
 function renderLid(rnd) {
   const { w, h } = box.lid;
-  lidLayer = document.createElement('canvas');
-  lidLayer.width = Math.round(w * dpr); lidLayer.height = Math.round(h * dpr);
+  lidLayer = makeLayer(Math.round(w * dpr), Math.round(h * dpr));
   const g = lidLayer.getContext('2d');
   setScreen(g);
   g.save(); roundRect(g, 0, 0, w, h, 5); g.clip();
@@ -111,16 +120,16 @@ function renderLid(rnd) {
   g.restore();
   // bevelled edge
   g.lineWidth = 1;
-  g.strokeStyle = 'rgba(255,248,230,0.4)'; roundRect(g, 1.5, 1.5, w - 3, h - 3, 4); g.stroke();
+  g.strokeStyle = PAINT.lidBevel; roundRect(g, 1.5, 1.5, w - 3, h - 3, 4); g.stroke();
   g.strokeStyle = theme.woodDk; roundRect(g, 0.5, 0.5, w - 1, h - 1, 5); g.stroke();
 }
 // a shallow scoop near the lid's right edge, shaded as a recess lit from the left
 function drawFingerPull(g, lidW, lidH) {
   const fw = box.pullW, fh = clamp(lidH * 0.2, 44, 120), fx = lidW - fw - 8, fy = (lidH - fh) / 2;
   const gr = g.createLinearGradient(fx, 0, fx + fw, 0);
-  gr.addColorStop(0, 'rgba(70,42,15,0.4)'); gr.addColorStop(0.55, 'rgba(70,42,15,0.1)'); gr.addColorStop(1, 'rgba(255,245,220,0.35)');
+  [0, 0.55, 1].forEach((t, i) => gr.addColorStop(t, PAINT.pull[i]));
   fillRoundRect(g, gr, fx, fy, fw, fh, fw / 2);
-  g.strokeStyle = 'rgba(70,42,15,0.2)'; g.lineWidth = 0.8; g.stroke();
+  g.strokeStyle = PAINT.pullEdge; g.lineWidth = 0.8; g.stroke();
 }
 
 // ---------- each frame ----------
@@ -143,44 +152,44 @@ function drawBrassPlate(g, x, y, w, h, rad) {
   fillRoundRect(g, verticalGradient(g, y, y + h, theme.brassHi, theme.brassLo), x, y, w, h, rad);
 }
 function drawSlot(g) {
-  const sl = box.slot, pw = sl.w + SLOT_PLATE_PAD, ph = 22, fed = notes.some(inSlot);
+  const sl = box.slot, pw = sl.w + SLOT_PLATE_PAD, ph = 22, fed = slips.some(inSlot);
   drawBrassPlate(g, sl.x - pw / 2, sl.y - ph / 2, pw, ph, 7);
   // screws
-  for (const dx of [-pw / 2 + 7, pw / 2 - 7]) fillCircle(g, 'rgba(0,0,0,0.25)', sl.x + dx, sl.y, 1.6);
-  fillRoundRect(g, fed ? '#000' : '#2a2116', sl.x - sl.w / 2, sl.y - 2.5, sl.w, 5, 2.5);
+  for (const dx of [-pw / 2 + 7, pw / 2 - 7]) fillCircle(g, PAINT.screw, sl.x + dx, sl.y, 1.6);
+  fillRoundRect(g, fed ? PAINT.slitFed : PAINT.slit, sl.x - sl.w / 2, sl.y - 2.5, sl.w, 5, 2.5);
 }
 
 // vintage VU-style meter: a cream dial behind glass in a brass bezel
 function drawMeter(g) {
   const { x, y, w, h } = box.meter, fx = x + 3, fy = y + 3, fw = w - 6, fh = h - 6;
   drawBrassPlate(g, x, y, w, h, 5);
-  fillRoundRect(g, verticalGradient(g, fy, fy + fh, '#f8eac4', '#e9d39c'), fx, fy, fw, fh, 3);
+  fillRoundRect(g, verticalGradient(g, fy, fy + fh, ...PAINT.meterFace), fx, fy, fw, fh, 3);
   g.save(); roundRect(g, fx, fy, fw, fh, 3); g.clip();
   // the needle pivots below the face; the scale spans a0..a1, red from ar
   const a0 = -Math.PI / 2 - 0.75, a1 = -Math.PI / 2 + 0.75;
   const dial = { px: fx + fw / 2, py: fy + fh * 1.15, R: fh * 0.95, a0, a1, ar: lerp(a0, a1, 0.7) };
   drawMeterScale(g, dial, fh);
-  g.fillStyle = METER_INK; g.font = `600 ${Math.round(Math.min(fh * 0.2, fw / 6.5))}px ${MONO}`; g.textAlign = 'center'; g.textBaseline = 'middle';
+  g.fillStyle = PAINT.meterInk; g.font = `600 ${Math.round(Math.min(fh * 0.2, fw / 6.5))}px ${MONO}`; g.textAlign = 'center'; g.textBaseline = 'middle';
   g.fillText('OUTCOMES', dial.px, fy + fh * 0.74);
   drawNeedle(g, dial, lerp(a0, a1, meter.value));
   // glass sheen
   const gr = g.createLinearGradient(0, fy, 0, fy + fh);
-  gr.addColorStop(0, 'rgba(255,255,255,0.35)'); gr.addColorStop(0.45, 'rgba(255,255,255,0)');
+  gr.addColorStop(0, PAINT.glass[0]); gr.addColorStop(0.45, PAINT.glass[1]);
   g.fillStyle = gr; g.fillRect(fx, fy, fw, fh);
   g.restore();
 }
 function drawMeterScale(g, { px, py, R, a0, a1, ar }, fh) {
   g.lineCap = 'butt';
-  g.strokeStyle = METER_INK; g.lineWidth = 0.8; g.beginPath(); g.arc(px, py, R * 0.8, a0, ar); g.stroke();
-  g.strokeStyle = METER_RED; g.lineWidth = fh * 0.08; g.beginPath(); g.arc(px, py, R * 0.82, ar, a1); g.stroke();
+  g.strokeStyle = PAINT.meterInk; g.lineWidth = 0.8; g.beginPath(); g.arc(px, py, R * 0.8, a0, ar); g.stroke();
+  g.strokeStyle = PAINT.meterRed; g.lineWidth = fh * 0.08; g.beginPath(); g.arc(px, py, R * 0.82, ar, a1); g.stroke();
   for (let i = 0; i <= 10; i++) {
     const a = lerp(a0, a1, i / 10), r0 = R * 0.8, r1 = R * (i % 2 ? 0.86 : 0.9);
-    g.strokeStyle = a > ar + 0.01 ? METER_RED : METER_INK; g.lineWidth = i % 2 ? 0.6 : 1;
+    g.strokeStyle = a > ar + 0.01 ? PAINT.meterRed : PAINT.meterInk; g.lineWidth = i % 2 ? 0.6 : 1;
     g.beginPath(); g.moveTo(px + Math.cos(a) * r0, py + Math.sin(a) * r0); g.lineTo(px + Math.cos(a) * r1, py + Math.sin(a) * r1); g.stroke();
   }
 }
 function drawNeedle(g, { px, py, R }, a) {
-  g.strokeStyle = '#1d1a17'; g.lineWidth = 1;
+  g.strokeStyle = PAINT.needle; g.lineWidth = 1;
   g.beginPath(); g.moveTo(px, py); g.lineTo(px + Math.cos(a) * R * 0.95, py + Math.sin(a) * R * 0.95); g.stroke();
 }
 
@@ -196,36 +205,39 @@ function drawLid(g) {
     drawLidLabel(g, e.tag, x, y, fs, k);
     drawLed(g, x, y - fs * 1.3, ledR, k);
   });
+  // statuses in a second pass, so a long card isn't hidden under a neighbour's label
+  g.font = statusFont();
+  forEachTag((e, ex, y) => drawStatuses(g, e, ex + lidState.offset, y + fs * 0.85));
   g.restore();
 }
 // engraved label, with light from the element below showing through the wood; glows while lit
 function drawLidLabel(g, tag, x, y, fs, k) {
   const gl = g.createRadialGradient(x, y - fs * 0.5, 0, x, y - fs * 0.5, fs * 3.2);
-  gl.addColorStop(0, `rgba(255,226,170,${0.12 + 0.4 * k})`); gl.addColorStop(1, 'rgba(255,226,170,0)');
+  gl.addColorStop(0, `rgba(${PAINT.labelLightRGB},${0.12 + 0.4 * k})`); gl.addColorStop(1, `rgba(${PAINT.labelLightRGB},0)`);
   g.fillStyle = gl; g.fillRect(x - fs * 3.2, y - fs * 3.7, fs * 6.4, fs * 6.4);
-  g.fillStyle = 'rgba(255,250,236,0.5)'; g.fillText(tag, x, y + 0.8);
+  g.fillStyle = PAINT.labelHighlight; g.fillText(tag, x, y + 0.8);
   g.fillStyle = theme.lidInk; g.fillText(tag, x, y);
   if (k > 0) {
-    g.save(); g.shadowColor = `rgba(255,150,60,${k})`; g.shadowBlur = 8;
-    g.fillStyle = `rgba(196,64,20,${k})`; g.fillText(tag, x, y); g.restore();
+    g.save(); g.shadowColor = `rgba(${PAINT.labelGlowRGB},${k})`; g.shadowBlur = 8;
+    g.fillStyle = `rgba(${PAINT.labelLitRGB},${k})`; g.fillText(tag, x, y); g.restore();
   }
 }
 // LED lamp in a small metal bezel, lit to brightness k
 function drawLed(g, x, y, rad, k) {
   fillCircle(g, verticalGradient(g, y - rad - 1, y + rad + 1, theme.ringHi, theme.ringLo, x), x, y, rad + 1.1);
-  fillCircle(g, LED_OFF, x, y, rad);
+  fillCircle(g, PAINT.ledOff, x, y, rad);
   if (k > 0) {
-    g.save(); g.globalAlpha = k; g.shadowColor = LED_GLOW; g.shadowBlur = 10;
-    fillCircle(g, LED_ON, x, y, rad); g.restore();
+    g.save(); g.globalAlpha = k; g.shadowColor = PAINT.ledGlow; g.shadowBlur = 10;
+    fillCircle(g, PAINT.ledOn, x, y, rad); g.restore();
   }
-  fillCircle(g, 'rgba(255,255,255,0.55)', x - rad * 0.35, y - rad * 0.35, rad * 0.3);
+  fillCircle(g, PAINT.ledShine, x - rad * 0.35, y - rad * 0.35, rad * 0.3);
 }
 
 // ---------- motion ----------
 // idle, the needle wanders through the middle of the scale (1–3 of 5) to show the machine is
-// running; while a note passes through the slot it swings into the red
+// running; while a slip passes through the slot it swings into the red
 function stepMeter(dt) {
-  const hot = notes.some(inSlot);
+  const hot = slips.some(inSlot);
   if (now >= meter.nextIdle) {
     meter.idle = 0.2 + 0.4 * Math.random();
     meter.nextIdle = now + 0.3 + Math.random() * 1.2;

@@ -28,8 +28,19 @@
     <p class="motto">infrastructure for <span>causality ops</span></p>
   </div>
 </div>
+<!-- front-panel controls; positioned by layout() -->
+<div class="controls">
+  <button class="reset" type="button" title="Reset the machine" aria-label="Reset the machine">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19.5 12a7.5 7.5 0 1 1-2.2-5.3"/><path d="M19.5 3.5v4.5h-4.5"/></svg>
+  </button>
+  <div class="modes" role="group" aria-label="Mode">
+    <button class="mode" type="button" data-scenario="ai-capex" aria-pressed="true">AI CAPEX</button>
+    <button class="mode" type="button" data-scenario="staffing" aria-pressed="false">STAFFING</button>
+    <button class="mode" type="button" data-scenario="medical" aria-pressed="false">MEDICAL</button>
+  </div>
+</div>
 <footer class="about">
-  <p class="tag">Keep up with the surprises</p>
+  <p class="tagline">Keep up with the surprises</p>
   <p>The faster decisions get made, the more it&#8217;s worth keeping track of the <em>why</em> behind them.</p>
   <p><a href="mailto:info@longreach.ai">[Talk to us]</a>
     <a href="https://api.thatswhy.dev/mcp">[Talk to our MCP]</a>
@@ -44,8 +55,12 @@
 <script src="js/elements.js"></script>
 <script src="js/endpoints.js"></script>
 <script src="js/render.js"></script>
-<script src="js/notes.js"></script>
+<script src="js/tags.js"></script>
+<script src="js/slips.js"></script>
+<script src="js/conditions.js"></script>
+<script src="js/statuses.js"></script>
 <script src="js/box.js"></script>
+<script src="js/controls.js"></script>
 <script src="js/build.js"></script>
 <script src="js/main.js"></script>
 </body>

@@ -410,7 +410,7 @@ class Fuser extends Elem {
     f.ms.forEach((m, i) => { m.u = lerp(f.from[i][0], this.C[0], e); m.v = lerp(f.from[i][1], this.C[1], e); });
     if (t < 1) return;
     const [m, o] = f.ms;
-    if (o) { m.mat = blendMat(m.mat, o.mat); o.dead = true; burst(this.C[0], this.C[1], m.mat, 16); this.fusedAt = now; }
+    if (o) { m.mat = blendMat(m.mat, o.mat); o.dead = true; emit('fused', o, m); burst(this.C[0], this.C[1], m.mat, 16); this.fusedAt = now; }
     m.held = false; setPath(m, this.outP); this.fuse = null;
   }
   // two waiting marbles fuse at once; a lone one gives up waiting and passes through

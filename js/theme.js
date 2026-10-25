@@ -5,7 +5,14 @@ const darkQuery = matchMedia('(prefers-color-scheme: dark)');
 const currentTheme = () => THEMES[darkQuery.matches ? 'dark' : 'light'];
 
 const HAND = '"Bradley Hand", "Segoe Print", "Comic Sans MS", cursive';
-const MONO = 'ui-monospace, "SF Mono", Menlo, Consolas, monospace';
+// the monospace font is defined once, as --mono in style.css
+const MONO = getComputedStyle(document.documentElement).getPropertyValue('--mono').trim();
+
+// colours the page's CSS shares with the canvas drawing: CSS variable → THEMES key
+const CSS_COLORS = { '--bg': 'bg', '--ink': 'ink', '--brass-hi': 'brassHi', '--brass-lo': 'brassLo', '--engrave': 'engrave', '--plate-shadow': 'shadow' };
+function applyThemeToCss(t) {
+  for (const [name, key] of Object.entries(CSS_COLORS)) document.documentElement.style.setProperty(name, t[key]);
+}
 
 // ---------- themes ----------
 // wood: the sliding lid; walnut: the box around it
@@ -19,7 +26,7 @@ const THEMES = {
     pink: '#f5a3bb', pinkDk: '#e07094',
     ringHi: '#eceef2', ringLo: '#9aa0aa', hole: '#1a1b1f', blade0: '#5d626c', blade1: '#858a94', seam: 'rgba(20,22,26,0.55)',
     ink: '#3b3631', tagBg: 'rgba(244,239,230,0.88)', tagLit: '#e0708f',
-    paper: '#fffdf6', paperLine: 'rgba(80,120,200,0.18)', paperInk: '#3b3631', brassHi: '#e6c97f', brassLo: '#b08a3e',
+    paper: '#fffdf6', paperLine: 'rgba(80,120,200,0.18)', paperInk: '#3b3631', brassHi: '#e6c97f', brassLo: '#b08a3e', engrave: '#3a2a12',
     wood: '#d6b98d', woodHi: '#e8d2ab', woodDk: 'rgba(110,75,35,0.45)', grain: '125,82,38', lidInk: 'rgba(92,60,28,0.62)', boxShadow: 'rgba(70,48,25,0.3)',
     walnut: '#6b4a33', walnutHi: '#7e5a40', walnutGrain: '35,20,10'
   },
@@ -32,7 +39,7 @@ const THEMES = {
     pink: '#c97790', pinkDk: '#99506a',
     ringHi: '#8d939d', ringLo: '#40454d', hole: '#000', blade0: '#3a3f47', blade1: '#5a606a', seam: 'rgba(0,0,0,0.6)',
     ink: '#d9d4cc', tagBg: 'rgba(22,24,28,0.85)', tagLit: '#f08fae',
-    paper: '#ece6d8', paperLine: 'rgba(80,120,200,0.22)', paperInk: '#2e2a26', brassHi: '#b89a55', brassLo: '#7d6229',
+    paper: '#ece6d8', paperLine: 'rgba(80,120,200,0.22)', paperInk: '#2e2a26', brassHi: '#b89a55', brassLo: '#7d6229', engrave: '#241808',
     wood: '#b39268', woodHi: '#c6a77c', woodDk: 'rgba(40,25,10,0.6)', grain: '80,50,22', lidInk: 'rgba(60,38,16,0.72)', boxShadow: 'rgba(0,0,0,0.65)',
     walnut: '#5a3d2a', walnutHi: '#6a4a34', walnutGrain: '22,12,5'
   }

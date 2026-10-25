@@ -11,11 +11,12 @@ const PAIRED = new Set([Cross, Fuser]);                     // need marbles arri
 function build() {
   layout();
   theme = currentTheme();
+  applyThemeToCss(theme);
   canvas.width = Math.round(W * dpr); canvas.height = Math.round(H * dpr);
   for (const c of [baseCanvas, flyCanvas]) { c.width = canvas.width; c.height = canvas.height; }
   applyTilt();
   rng = mulberry32(seed);
-  marbles = []; particles = []; notes = []; elements = []; grid = [];
+  marbles = []; particles = []; slips = []; statuses = []; elements = []; grid = [];
   const reach = placeElements();
   assignTags();
   placeEndpoints(reach);

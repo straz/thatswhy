@@ -1,6 +1,6 @@
 'use strict';
 // Drawing the machine: static track layers (rendered once per build), then each frame the
-// moving parts, the element tags, the notes and the box on top.
+// moving parts, the element tags, the slips and the box on top.
 
 // layerA: background and ground-level track; layerB: elevated track (bridges, loop tops)
 let layerA, layerB;
@@ -44,9 +44,10 @@ function drawRails(g, segs, elevated) {
     strokeSegs(g, [A, B], 0.38 * r, theme.rail);
   }
 }
-function makeLayer() {
+// an offscreen canvas, by default the size of the page canvases (in device pixels)
+function makeLayer(width = canvas.width, height = canvas.height) {
   const c = document.createElement('canvas');
-  c.width = canvas.width; c.height = canvas.height;
+  c.width = width; c.height = height;
   return c;
 }
 // every path a marble can actually take (paths from dead input lanes are left out)
@@ -90,13 +91,17 @@ function blit(g, layer) {
 function draw() {
   drawMachine(ctx);
   drawTags(ctx);
-  drawNotes(ctx, true);
+  drawSlips(ctx, true);
   drawTop(ctx);
   drawFront(baseCtx);
-  flyCtx.setTransform(1, 0, 0, 1, 0, 0);
-  flyCtx.clearRect(0, 0, flyCanvas.width, flyCanvas.height);
-  setScreen(flyCtx);
-  drawNotes(flyCtx, false);
+  drawFly(flyCtx);
+}
+// slips falling out of the box, on a canvas cleared every frame
+function drawFly(g) {
+  g.setTransform(1, 0, 0, 1, 0, 0);
+  g.clearRect(0, 0, g.canvas.width, g.canvas.height);
+  setScreen(g);
+  drawSlips(g, false);
 }
 // leaves the context in screen coordinates
 function drawMachine(g) {
@@ -116,17 +121,7 @@ function drawMachine(g) {
   setScreen(g);
 }
 
-// ---------- tags ----------
-const tagSize = () => clamp(r * 0.8, 8, 11);
-const tagFont = () => `600 ${Math.round(tagSize())}px ${MONO}`;
-// call fn(e, x, y, lit) for each tagged element, at its tag's screen position
-function forEachTag(fn) {
-  for (const e of elements) {
-    if (!e.tag) continue;
-    const [x, y] = toScreen(...e.tagPos());
-    fn(e, x, y, e.litLevel());
-  }
-}
+// ---------- tags on the machine (visible with the lid open) ----------
 // rounded label centred on (x, y), kept on screen
 function pill(g, text, x, y, fg, alpha) {
   const fs = tagSize(), tw = g.measureText(text).width, ph = fs * 1.6, pw = tw + fs;

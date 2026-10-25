@@ -16,8 +16,12 @@ const baseCtx = baseCanvas.getContext('2d');
 const flyCanvas = document.getElementById('fly');
 const flyCtx = flyCanvas.getContext('2d');
 const plaque = document.querySelector('.plaque');
+const controls = document.querySelector('.controls');
 const about = document.querySelector('.about');
-const seed = parseInt(params.get('seed'), 10) || Math.floor(Math.random() * 1e9);
+// layout seed: pinned by ?seed=, otherwise random and re-drawn by the reset button
+const pinnedSeed = parseInt(params.get('seed'), 10);
+let seed = pinnedSeed || newSeed();
+function newSeed() { return Math.floor(Math.random() * 1e9); }
 
 // ---------- state ----------
 // viewport: size, pixel ratio, orientation, and its extent along (F) and across (C) the flow
@@ -54,7 +58,8 @@ function nearestSink(i) {
 }
 
 // ---------- layout ----------
-const SLOT_PLATE_PAD = 24;   // the brass plate is this much wider than its slit
+const SLOT_PLATE_PAD = 24;           // the brass plate is this much wider than its slit
+const SLOT_MIN = 100, SLOT_MAX = 200;  // width of the slit
 
 function layout() {
   W = innerWidth; H = innerHeight; dpr = Math.min(devicePixelRatio || 1, 2);
@@ -66,7 +71,8 @@ function layout() {
   const x = clamp(W * 0.02, 10, 28);
   about.style.left = about.style.right = `${x}px`;
   box = layoutBox(x, clamp(H * 0.02, 10, 20), about.getBoundingClientRect().top - 12);
-  placePlaque(box.plaque);
+  placeAt(plaque, box.plaque);
+  placeAt(controls, box.controls);
   layoutMachine(machineArea(), mobile);
 }
 
@@ -77,21 +83,34 @@ function chooseMode(mobile) {
 }
 
 // The wooden box, seen from above and in front: the top surface (walls around the machine),
-// and the front face below it holding, left to right, the name plaque, the meter and the slot.
+// and the front face below it holding, left to right, the name plaque, the controls, the meter
+// and the slot. Where that row won't fit, the controls get a row of their own above it.
 function layoutBox(x, top, bottom) {
   const wall = clamp(Math.min(W, H) * 0.02, 9, 16);
   const bw = W - 2 * x, bh = bottom - top;
-  const meterW = clamp(bw * 0.13, 62, 100), meterH = meterW * 0.62, frontH = meterH + 1.2 * wall;
-  // the plaque may be as wide as leaves the slot its minimum width
-  const plaqueSize = sizePlaque(Math.max(32, meterH * 0.8), bw - meterW - 4 * wall - 56 - SLOT_PLATE_PAD - 100);
+  const meterW = clamp(bw * 0.13, 62, 100), meterH = meterW * 0.62;
+  const ctrl = sizeControls(meterH), plaqueMinH = Math.max(32, meterH * 0.8);
+  // The front row, right to left: a margin, the slot plate, the meter, the controls (when in
+  // line), and the plaque centred in what's left. `fixedW` is everything but the slit and the
+  // plaque's space; the slit gets whatever the plaque leaves, between SLOT_MIN and SLOT_MAX.
+  const gap = 1.5 * wall;          // between items
+  const plaqueEdge = 0.75 * wall + 12;   // least space either side of the plaque
+  const fixedW = inline => wall + 8 + SLOT_PLATE_PAD + gap + meterW + (inline ? gap + ctrl.w : 0);
+  const plaqueRoom = inline => bw - fixedW(inline) - SLOT_MIN - 2 * plaqueEdge;
+  const stacked = sizePlaque(plaqueMinH, Infinity).w > plaqueRoom(true);
+  const plaqueSize = sizePlaque(plaqueMinH, plaqueRoom(!stacked));
   const plaqueW = plaqueSize.w, plaqueH = plaqueSize.h;
-  const topH = bh - frontH, frontY = top + topH;
+  const ctrlRowH = stacked ? ctrl.h + 0.8 * wall : 0, mainH = meterH + 1.2 * wall, frontH = ctrlRowH + mainH;
+  const topH = bh - frontH, frontY = top + topH, mainY = frontY + ctrlRowH;
   const inner = { x: x + wall, y: top + wall, w: bw - 2 * wall, h: topH - 2 * wall };
   const lip = wall * 0.4;   // the lid overlaps the walls by this much
-  // slot at the right of the front face, the meter and then the plaque to its left
-  const slotW = clamp(bw - plaqueW - meterW - 4 * wall - 32 - SLOT_PLATE_PAD, 100, 200), plateW = slotW + SLOT_PLATE_PAD;
+  const slotW = clamp(bw - fixedW(!stacked) - plaqueW - 2 * plaqueEdge, SLOT_MIN, SLOT_MAX), plateW = slotW + SLOT_PLATE_PAD;
   const slotX = x + bw - wall - 8 - plateW / 2;
-  const meterX = slotX - plateW / 2 - 1.5 * wall - meterW;
+  const meterX = slotX - plateW / 2 - gap - meterW;
+  const ctrlPos = stacked
+    ? { x: x + (bw - ctrl.w) / 2, y: frontY + 0.5 * wall }
+    : { x: meterX - gap - ctrl.w, y: mainY + (mainH - ctrl.h) / 2 };
+  const plaqueRight = stacked ? meterX : ctrlPos.x;
   return {
     x, y: top, w: bw, h: bh, inner,
     front: { y: frontY, h: frontH },
@@ -99,10 +118,11 @@ function layoutBox(x, top, bottom) {
     pullW: clamp(inner.w * 0.012, 10, 16),   // width of the finger pull in the lid
     lidPeek: clamp(bw * 0.07, 56, 120),      // how much of the open lid stays in view
     lid: { x: inner.x - lip, y: inner.y - lip, w: inner.w + 2 * lip, h: inner.h + 2 * lip },
-    meter: { x: meterX, y: frontY + (frontH - meterH) / 2, w: meterW, h: meterH },
-    // plaque centred between the box's left edge and the meter
-    plaque: { x: (x + meterX - plaqueW) / 2, y: frontY + (frontH - plaqueH) / 2, w: plaqueW, h: plaqueH },
-    slot: { x: slotX, y: frontY + frontH * 0.42, w: slotW }
+    meter: { x: meterX, y: mainY + (mainH - meterH) / 2, w: meterW, h: meterH },
+    controls: { ...ctrlPos, w: ctrl.w, h: ctrl.h },
+    // plaque centred between the box's left edge and whatever is to its right
+    plaque: { x: (x + plaqueRight - plaqueW) / 2, y: mainY + (mainH - plaqueH) / 2, w: plaqueW, h: plaqueH },
+    slot: { x: slotX, y: mainY + mainH * 0.42, w: slotW }
   };
 }
 
@@ -123,9 +143,14 @@ function sizePlaque(h, room) {
   }
   return { w: plaque.offsetWidth, h: plaque.offsetHeight };
 }
-function placePlaque({ x, y }) {
-  plaque.style.left = `${x}px`;
-  plaque.style.top = `${y}px`;
+// size the controls to suit a meter of height meterH; returns the size they take up
+function sizeControls(meterH) {
+  controls.style.fontSize = `${Math.round(clamp(meterH * 0.17, 9, 12))}px`;
+  return { w: controls.offsetWidth, h: controls.offsetHeight };
+}
+function placeAt(el, { x, y }) {
+  el.style.left = `${x}px`;
+  el.style.top = `${y}px`;
 }
 
 // ---------- perspective ----------

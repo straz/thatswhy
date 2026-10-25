@@ -62,9 +62,7 @@ class Sink extends Shutter {
   arrive(m) {
     if (this.m) return;
     this.m = m; m.held = true; this.t0 = now;
-    // an earlier note still waiting by this exit heads for the slot now
-    for (const q of notes) if (q.sink === this && now - q.t0 < NOTE_WAIT) q.t0 = now - NOTE_WAIT;
-    notes.push(makeNote(this, m.tags));
+    emit('exitReached', this, m);
   }
   update() {
     const m = this.m;
@@ -76,7 +74,7 @@ class Sink extends Shutter {
       const e = easeInOut((t - 0.6) / 0.4);
       m.clip = this.aperture(); m.scale = 1 - 0.75 * e; m.dark = e;
     }
-    if (t >= 1.0) m.visible = false;
+    if (t >= 1.0 && m.visible) { m.visible = false; emit('swallowed', m); }
     if (t >= 1.5) { m.dead = true; this.m = null; }
   }
 }

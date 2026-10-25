@@ -1,0 +1,37 @@
+# MEDICAL mode: patient status and care decisions, modelled on the sepsis-triage records in
+# supervisor/dist/data/decisions/kurson-health (Sepsis-3 bundle, routine monitoring, SOFA/qSOFA/
+# SIRS scores, risk tiers, AI decisions concurred with or overridden). Values are illustrative.
+mode: MEDICAL
+conditions:
+  # the examples given
+  - "vitals within acceptable range — continue standard observation"
+  - "sepsis probability score: 0.52"
+  - "white blood cell count: 18.67, lactate: 3.43"
+  - "not responding to therapy"
+  # new
+  - "MAP 58 mmHg — below target, start vasopressors"
+  - "lactate 4.1 mmol/L — repeat in 2 hours"
+  - "qSOFA 2/3 — escalate per Sepsis-3 protocol"
+  - "SOFA 9/24, up 3 points since admission"
+  - "SIRS 3/4 — meets criteria"
+  - "blood cultures drawn before antibiotics"
+  - "broad-spectrum antibiotics started within 1 hour"
+  - "30 mL/kg fluid bolus complete"
+  - "risk tier: tier-1-critical — transfer to ICU"
+  - "risk tier: tier-3-monitor"
+  - "heart rate 158 bpm, SpO₂ 100%"
+  - "temperature 39.7 °C, respiratory rate 25"
+  - "SpO₂ 90% on room air — start supplemental oxygen"
+  - "altered mental status — neuro checks every hour"
+  - "post-operative day 2, wound clean and dry"
+  - "urine output below 0.5 mL/kg/h"
+  - "creatinine rising — adjust antibiotic dose"
+  - "cultures positive: gram-negative rods"
+  - "narrow antibiotics to match sensitivities"
+  - "lactate cleared to 1.2 mmol/L"
+  - "AI recommends sepsis bundle — clinician concurs"
+  - "override: insufficient support for AI decision"
+  - "post-closure review flagged for re-examination"
+  - "family meeting scheduled — goals of care"
+  - "step-down from ICU approved"
+  - "discharge criteria met"
