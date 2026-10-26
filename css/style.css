@@ -4,6 +4,14 @@
   --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
   --accent: #9db8ff;
   --go-hi: #93d68c; --go-lo: #3d8a47; --go-ink: #123a1a;
+  /* Parts stand out from the front face, which the viewer looks down on, so the top of each
+     shows as a strip above it: --plate-top deep for the flat brass parts. js/box.js reads
+     --plate-top and --plate-edge for the meter and slot it draws. */
+  --plate-top: 2px;
+  --plate-edge: rgba(255,248,225,0.6);   /* light caught by a plate's top edge */
+  --brass-face: linear-gradient(var(--brass-hi), var(--brass-lo));
+  --brass-shadow: 1px 2px 0 var(--plate-shadow), inset 0 1px 0 var(--plate-edge);
+  --engrave-shadow: 0 1px 0 rgba(255,240,200,0.45);
 }
 @media (prefers-color-scheme: dark) {
   :root { --go-hi: #74b46f; --go-lo: #2c6a35; --go-ink: #0b2611; }
@@ -17,8 +25,8 @@ canvas { position: fixed; inset: 0; width: 100%; height: 100%; display: block; t
   position: fixed; box-sizing: border-box;
   display: flex; align-items: center; gap: .5em; padding: .25em 1em;
   border-radius: 5px; white-space: nowrap;
-  background: linear-gradient(var(--brass-hi), var(--brass-lo));
-  box-shadow: 1px 2px 0 var(--plate-shadow), inset 0 1px 0 rgba(255,245,215,0.45);
+  background: var(--brass-face);
+  box-shadow: 0 calc(-1 * var(--plate-top)) 0 var(--brass-lo), var(--brass-shadow);   /* its top, then the plate */
   font-family: var(--mono);
 }
 /* screws */
@@ -30,7 +38,7 @@ canvas { position: fixed; inset: 0; width: 100%; height: 100%; display: block; t
 .plaque::after { right: 5px; }
 .plaque .logo { display: block; line-height: 0; }
 .plaque img { width: 1.6em; height: 1.6em; opacity: .85; }
-.plaque h1, .plaque .motto { margin: 0; line-height: 1.15; color: var(--engrave); text-shadow: 0 1px 0 rgba(255,240,200,0.45); }
+.plaque h1, .plaque .motto { margin: 0; line-height: 1.15; color: var(--engrave); text-shadow: var(--engrave-shadow); }
 .plaque h1 { font-size: 1em; font-weight: 700; letter-spacing: .03em; }
 .plaque .dev { opacity: .6; }
 .plaque .motto { margin-top: .15em; font-size: .9em; font-weight: 600; letter-spacing: .04em; opacity: .75; }
@@ -43,37 +51,86 @@ canvas { position: fixed; inset: 0; width: 100%; height: 100%; display: block; t
   font-family: var(--mono);
 }
 /* :where() keeps this reset from overriding the button styles below */
-:where(.controls button) { font: inherit; border: 0; padding: 0; margin: 0; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+:where(.controls button) { --press-y: 0px; font: inherit; border: 0; padding: 0; margin: 0; cursor: pointer; -webkit-tap-highlight-color: transparent; }
 .controls button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
-.controls button:active { transform: translateY(1px); }
-/* round green reset button */
+/* Pressed, a button sinks into the box: seen from above, it moves up (--press-y) and less of its
+   top shows, so each top strip shrinks by the same amount and its back edge stays put. */
+.controls button:active { --press-y: -1px; transform: translateY(var(--press-y)); }
+/* round green reset button; the first shadow is the top of its cylinder */
 .reset {
-  width: 2.6em; height: 2.6em; border-radius: 50%; display: grid; place-items: center;
+  --press-shade: transparent;   /* darkens the face while pressed */
+  position: relative;
+  width: 3.4em; height: 3.4em; border-radius: 50%; display: grid; place-items: center;
   color: var(--go-ink);
-  background: radial-gradient(circle at 35% 30%, var(--go-hi), var(--go-lo));
-  box-shadow: 1px 2px 0 var(--plate-shadow), inset 0 1px 0 rgba(255,245,215,0.5), inset 0 -1px 2px rgba(0,0,0,0.25);
+  background: linear-gradient(var(--press-shade), var(--press-shade)), radial-gradient(circle at 35% 30%, var(--go-hi), var(--go-lo));
+  box-shadow: 0 calc(-.3em - var(--press-y)) 0 color-mix(in srgb, var(--go-lo) 70%, #000), 1px 2px 0 var(--plate-shadow),
+    inset 0 1px 0 rgba(255,245,215,0.5), inset 0 -1px 2px rgba(0,0,0,0.25);
 }
+/* tooltip: a small brass tag like the plaque */
+.reset::after {
+  content: attr(data-tip); position: absolute; bottom: calc(100% + .8em); left: 50%;
+  transform: translate(-50%, calc(-1 * var(--press-y)));   /* stays put when the button is pressed */
+  padding: .15em .6em; border-radius: 3px; white-space: nowrap; pointer-events: none;
+  font-size: .9em; font-weight: 700; letter-spacing: .08em;
+  color: var(--engrave); text-shadow: var(--engrave-shadow);
+  background: var(--brass-face); box-shadow: var(--brass-shadow);
+  opacity: 0; transition: opacity .15s;
+}
+.reset:active { --press-shade: rgba(0,0,0,0.12); }
+.reset:hover::after, .reset:focus-visible::after { opacity: 1; transition-delay: .3s; }
 .reset svg { width: 1.4em; height: 1.4em; fill: none; stroke: currentColor; stroke-width: 2.6; stroke-linecap: round; stroke-linejoin: round; }
-/* backlit mode buttons in a dark bezel, 1970s control-panel style; --lamp is the lens colour */
+/* backlit mode buttons, 1970s control-panel style: a thick translucent plastic cap in a black
+   housing (the border); --lamp is the colour of the lamp behind the cap. The lit state changes
+   only --glow, --cap-edge and --cap-shade. Each top narrows toward the back for perspective:
+   the housing's by its -.04em shadow spread, the cap's by the .12em insets of its clip-path. */
 .modes {
-  display: flex; gap: .45em; padding: .35em; border-radius: 4px; background: #1b1410;
+  display: flex; gap: .55em; padding: .7em .45em .45em; border-radius: 4px; background: #1b1410;
   box-shadow: inset 0 1px 3px rgba(0,0,0,0.7), 0 1px 0 rgba(255,235,210,0.12);
 }
 .mode {
   --lamp: 255,178,70;
-  height: 2.6em; padding: 0 1.6em; border-radius: 3px;
+  position: relative; box-sizing: border-box;
+  height: 3.8em; padding: 0 1.5em;
+  border: .12em solid #110d0a; border-radius: 4px;
   font-weight: 700; letter-spacing: .08em; white-space: nowrap;
-  color: rgba(var(--lamp), 0.45);
-  background: linear-gradient(rgba(var(--lamp), 0.16), rgba(var(--lamp), 0.05)), #2a211b;
-  box-shadow: inset 0 1px 0 rgba(255,255,255,0.07), inset 0 -2px 3px rgba(0,0,0,0.5);
+  color: rgba(24,15,8,0.75); text-shadow: 0 1px 0 rgba(255,255,255,0.18);
+  /* unlit: milky plastic with no light behind it */
+  background: radial-gradient(ellipse at 50% 40%, rgba(var(--lamp),0.3), rgba(var(--lamp),0.14) 85%), #8a8178;
+  --glow: 0 0 transparent;                 /* halo around a lit button */
+  --cap-edge: rgba(255,255,255,0.3);       /* light catching the cap's top edge */
+  --cap-shade: rgba(0,0,0,0.3);            /* the cap's thickness, below */
+  box-shadow:
+    var(--glow),
+    0 calc(-.2em - var(--press-y)) 0 -.04em #3a322c,   /* top of the housing */
+    inset 0 0 0 1px rgba(0,0,0,0.55),      /* seam between housing and cap */
+    inset 0 2px 1px 1px var(--cap-edge),
+    inset 0 -3px 3px 1px var(--cap-shade);
+}
+/* the cap's raised face, a step in from its edge */
+.mode::before {
+  content: ''; position: absolute; inset: .28em; border-radius: 3px; pointer-events: none;
+  border-top: 1px solid rgba(255,255,255,0.4); border-bottom: 1px solid rgba(0,0,0,0.12);
+  box-shadow: 0 1px 2px rgba(0,0,0,0.15);
+  background: linear-gradient(rgba(255,255,255,0.14), rgba(255,255,255,0) 55%);   /* gloss */
+}
+/* top of the cap, which stands out further than the housing; narrower at the back */
+.mode::after {
+  content: ''; position: absolute; left: 0; right: 0; bottom: 100%; height: calc(.3em + var(--press-y)); pointer-events: none;
+  clip-path: polygon(.12em 0, calc(100% - .12em) 0, 100% 100%, 0 100%);
+  background: linear-gradient(rgba(var(--lamp),0.12), rgba(var(--lamp),0.24)), #a29a91;
+  box-shadow: inset 0 -1px 0 rgba(255,255,255,0.35);
 }
 .mode[data-scenario="staffing"] { --lamp: 150,226,120; }
 .mode[data-scenario="medical"] { --lamp: 130,196,255; }
+/* lit: the lamp glows through the plastic, brightest in the middle */
 .mode[aria-pressed="true"] {
-  color: #24170a;
-  background: radial-gradient(ellipse at 50% 35%, rgba(255,252,240,0.95), rgb(var(--lamp)) 75%);
-  box-shadow: 0 0 10px rgba(var(--lamp), 0.65), inset 0 1px 0 rgba(255,255,255,0.6), inset 0 -2px 3px rgba(0,0,0,0.2);
+  color: #1d1309; text-shadow: none;
+  background: radial-gradient(ellipse at 50% 45%, rgb(255,251,238) 25%, rgb(var(--lamp)) 115%);
+  --glow: 0 0 12px 1px rgba(var(--lamp),0.6);
+  --cap-edge: rgba(255,255,255,0.6);
+  --cap-shade: rgba(var(--lamp),0.6);
 }
+.mode[aria-pressed="true"]::after { background: linear-gradient(rgb(var(--lamp)), rgb(255,246,226)); }
 
 /* text below the box (left and right set by layout()) */
 .about {

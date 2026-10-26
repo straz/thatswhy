@@ -5,8 +5,9 @@ const darkQuery = matchMedia('(prefers-color-scheme: dark)');
 const currentTheme = () => THEMES[darkQuery.matches ? 'dark' : 'light'];
 
 const HAND = '"Bradley Hand", "Segoe Print", "Comic Sans MS", cursive';
-// the monospace font is defined once, as --mono in style.css
-const MONO = getComputedStyle(document.documentElement).getPropertyValue('--mono').trim();
+// a value defined once in style.css, as a CSS variable on :root
+const cssVar = name => getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+const MONO = cssVar('--mono');
 
 // colours the page's CSS shares with the canvas drawing: CSS variable → THEMES key
 const CSS_COLORS = { '--bg': 'bg', '--ink': 'ink', '--brass-hi': 'brassHi', '--brass-lo': 'brassLo', '--engrave': 'engrave', '--plate-shadow': 'shadow' };

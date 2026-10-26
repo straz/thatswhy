@@ -38,7 +38,7 @@ function stepStatuses() {
 }
 
 // ---------- drawing (on the lid) ----------
-const statusSize = () => tagSize() * 0.85;
+const statusSize = () => tagSize() * 1.02;   // a touch larger than the tag, for reading
 const statusFont = () => `500 ${Math.round(statusSize() * 2) / 2}px ${MONO}`;
 // room for a status under an element: its column's width, or its lanes' width when top-down
 const statusWidth = e => (mode === 'lr' ? e.wd : e.n * s) * 0.92;

@@ -13,13 +13,14 @@ const lidState = { offset: 0, open: false, drag: null };
 const meter = { value: 0, idle: 0.4, nextIdle: 0 };
 
 const LID_SNAP = 0.15;   // a drag past this fraction of the lid's travel opens (or closes) it
+const PLATE_TOP = parseFloat(cssVar('--plate-top'));   // depth of a brass plate's top, as on the plaque
 // colours that don't change with the light/dark theme (those are in THEMES);
 // entries ending in RGB are "r,g,b" for use with a varying alpha
 const PAINT = {
   edgeLight: 'rgba(255,232,205,0.22)', crease: 'rgba(0,0,0,0.25)', wallShadow: 'rgba(40,25,10,0.45)',
   frontShade: ['rgba(0,0,0,0.16)', 'rgba(0,0,0,0.34)'], lidBevel: 'rgba(255,248,230,0.4)',
   pull: ['rgba(70,42,15,0.4)', 'rgba(70,42,15,0.1)', 'rgba(255,245,220,0.35)'], pullEdge: 'rgba(70,42,15,0.2)',
-  screw: 'rgba(0,0,0,0.25)', slit: '#2a2116', slitFed: '#000',
+  screw: 'rgba(0,0,0,0.25)', plateEdge: cssVar('--plate-edge'), slit: '#2a2116', slitFed: '#000',
   meterFace: ['#f8eac4', '#e9d39c'], meterInk: '#2b2520', meterRed: '#c8321e', needle: '#1d1a17',
   glass: ['rgba(255,255,255,0.35)', 'rgba(255,255,255,0)'],
   labelLightRGB: '255,226,170', labelHighlight: 'rgba(255,250,236,0.5)', labelGlowRGB: '255,150,60', labelLitRGB: '196,64,20',
@@ -146,10 +147,14 @@ function drawFront(g) {
   drawSlot(g);
   drawMeter(g);
 }
-// brass plate with a drop shadow, as used by the slot and the meter bezel
+// brass plate for the slot and the meter bezel, drawn like the plaque (.plaque in style.css):
+// a drop shadow, its top showing above it, and a brass face whose top edge catches the light
 function drawBrassPlate(g, x, y, w, h, rad) {
   fillRoundRect(g, theme.shadow, x + 1, y + 2, w, h, rad);
+  fillRoundRect(g, theme.brassLo, x, y - PLATE_TOP, w, h, rad);
   fillRoundRect(g, verticalGradient(g, y, y + h, theme.brassHi, theme.brassLo), x, y, w, h, rad);
+  g.strokeStyle = PAINT.plateEdge; g.lineWidth = 1;
+  g.beginPath(); g.moveTo(x + rad, y + 0.5); g.lineTo(x + w - rad, y + 0.5); g.stroke();
 }
 function drawSlot(g) {
   const sl = box.slot, pw = sl.w + SLOT_PLATE_PAD, ph = 22, fed = slips.some(inSlot);
